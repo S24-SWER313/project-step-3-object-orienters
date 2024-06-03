@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "NamingServerApplication",
+            "request": "launch",
+            "mainClass": "object_orienters.techspot.naming_server.NamingServerApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-ConfigServerApplication<config-server>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
@@ -18,6 +25,17 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "object_orienters.techspot.contentservice.ContentServiceApplication",
             "projectName": "content-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=54151 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=content-service"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-NamingServerApplication<naming-server>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "object_orienters.techspot.naming_server.NamingServerApplication",
+            "projectName": "naming-server",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
