@@ -1,12 +1,12 @@
-package object_orienters.techspot.contentservice.post;
+// package object_orienters.techspot.contentservice.post;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+// import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.stereotype.Repository;
 
-import java.util.List;
+// import java.util.List;
 
-@Repository
-public interface SharedPostRepository extends JpaRepository<SharedPost, Long> {
+// @Repository
+// public interface SharedPostRepository extends JpaRepository<SharedPost, Long> {
 
-    List<SharedPost> findByPost(Post post);
-}
+//     List<SharedPost> findByPost(Post post);
+// }

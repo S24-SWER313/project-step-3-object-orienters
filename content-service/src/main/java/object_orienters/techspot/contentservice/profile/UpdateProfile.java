@@ -1,15 +1,15 @@
-package object_orienters.techspot.contentservice.profile;
+// package object_orienters.techspot.contentservice.profile;
 
-import lombok.Data;
+// import lombok.Data;
 
-import java.time.LocalDate;
+// import java.time.LocalDate;
 
-@Data
-public class UpdateProfile {
-    private LocalDate dob;
-    private String name;
-    private String about;
-    private String profession;
-    private Profile.Gender gender;
-    private String password;
-}
+// @Data
+// public class UpdateProfile {
+//     private LocalDate dob;
+//     private String name;
+//     private String about;
+//     private String profession;
+//     private Profile.Gender gender;
+//     private String password;
+// }

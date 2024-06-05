@@ -1,22 +1,22 @@
-package object_orienters.techspot.contentservice.comment;
+// package object_orienters.techspot.contentservice.comment;
 
-import object_orienters.techspot.contentservice.content.ReactableContent;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+// import object_orienters.techspot.contentservice.content.ReactableContent;
+// import org.springframework.data.domain.Page;
+// import org.springframework.data.domain.Pageable;
+// import org.springframework.data.repository.PagingAndSortingRepository;
+// import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+// import java.util.Optional;
 
-@Repository
-public interface CommentRepository extends PagingAndSortingRepository<Comment, Long> {
+// @Repository
+// public interface CommentRepository extends PagingAndSortingRepository<Comment, Long> {
 
-    Comment save(Comment comment);
+//     Comment save(Comment comment);
 
-    Optional<Comment> findByContentID(Long commentID);
+//     Optional<Comment> findByContentID(Long commentID);
 
-    void delete(Comment comment);
+//     void delete(Comment comment);
 
-    Page<Comment> findByCommentedOn(ReactableContent contentID, Pageable pageable);
+//     Page<Comment> findByCommentedOn(ReactableContent contentID, Pageable pageable);
 
-}
+// }

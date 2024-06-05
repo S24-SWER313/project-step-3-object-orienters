@@ -16,7 +16,7 @@
             "projectName": "config-server",
             "args": "",
             "envFile": "${workspaceFolder}/.env",
-            "vmArgs": " -Dcom.sun.management.jmxremote"
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=51686 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=config-server"
         },
         {
             "type": "java",
@@ -36,6 +36,28 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "object_orienters.techspot.naming_server.NamingServerApplication",
             "projectName": "naming-server",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=51697 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=naming-server"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MessagesServiceApplication<messages-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "object_orienters.techspot.messages_service.MessagesServiceApplication",
+            "projectName": "messages-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=52272 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=messages-service"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-SecurityServiceApplication<security-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "object_orienters.techspot.security_service.SecurityServiceApplication",
+            "projectName": "security-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
