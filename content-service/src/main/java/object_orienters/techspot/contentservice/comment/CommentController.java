@@ -47,7 +47,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments")
-    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
+    //@PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getComments(@PathVariable long contentID,
                                          @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
                                          @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
@@ -73,7 +73,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments/{commentID}")
-    @PreAuthorize("@permissionService.canAccessComment(#contentID, authentication.principal.username)")
+   // @PreAuthorize("@permissionService.canAccessComment(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID) {
         try {
             logger.info(">>>>Retrieving Comment... @ " + getTimestamp() + "<<<<");
@@ -89,7 +89,7 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentID}")
-    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
+   // @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
                                            @RequestParam(value = "files", required = false) List<MultipartFile> files,
                                            @RequestParam(value = "text", required = false) String text) throws IOException {
@@ -107,7 +107,7 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    @PreAuthorize("#commenter == authentication.principal.username && @permissionService.canAccessPost(#contentID, #commenter)")
+   // @PreAuthorize("#commenter == authentication.principal.username && @permissionService.canAccessPost(#contentID, #commenter)")
     public ResponseEntity<?> addComment(
             @PathVariable long contentID,
             @RequestParam(value = "commenter") String commenter,
@@ -129,7 +129,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    @PreAuthorize("isAuthenticated()")
+    //@PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
