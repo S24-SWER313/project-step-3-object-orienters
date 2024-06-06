@@ -1,9 +1,11 @@
-package object_orienters.techspot.content_service.content;
+package object_orienters.techspot.content_service.post;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import lombok.Data;
+import object_orienters.techspot.content_service.content.ContentType;
+import object_orienters.techspot.content_service.content.ReactableContent;
 
 
 @Entity
