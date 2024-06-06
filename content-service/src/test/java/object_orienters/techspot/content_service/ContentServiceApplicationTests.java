@@ -1,4 +1,4 @@
-package object_orienters.techspot.contentservice;
+package object_orienters.techspot.content_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

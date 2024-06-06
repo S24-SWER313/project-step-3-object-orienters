@@ -1,4 +1,4 @@
-package object_orienters.techspot.contentservice;
+package object_orienters.techspot.content_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
