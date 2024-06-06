@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ContentServiceApplication",
+            "request": "launch",
+            "mainClass": "object_orienters.techspot.content_service.ContentServiceApplication",
+            "projectName": "content-service"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-ConfigServerApplication<config-server>",
             "request": "launch",
             "cwd": "${workspaceFolder}",

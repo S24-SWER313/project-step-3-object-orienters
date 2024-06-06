@@ -1,8 +1,6 @@
 package object_orienters.techspot.content_service.content;
 
-import object_orienters.techspot.content_service.ContentType;
-import object_orienters.techspot.content_service.Privacy;
-import object_orienters.techspot.content_service.Profile;
+import object_orienters.techspot.content_service.profile.Profile;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

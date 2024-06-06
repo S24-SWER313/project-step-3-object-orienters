@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import lombok.Data;
-import object_orienters.techspot.content_service.ContentType;
 
 
 @Entity
