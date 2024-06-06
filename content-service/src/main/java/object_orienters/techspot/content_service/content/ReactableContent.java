@@ -24,13 +24,13 @@ public abstract class ReactableContent extends Content {
     private String textData;
 
     @JsonIgnore
+
     @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade =
     CascadeType.ALL, orphanRemoval = true)
     private List<Reaction> reactions;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "commentedOn", fetch = FetchType.EAGER, cascade =
-    CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "commentedOn", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
     private int numOfComments;
     private int numOfReactions;
