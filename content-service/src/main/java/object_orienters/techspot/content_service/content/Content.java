@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
-import object_orienters.techspot.content_service.ContentType;
-import object_orienters.techspot.content_service.Privacy;
-import object_orienters.techspot.content_service.Profile;
+import object_orienters.techspot.content_service.profile.Profile;
 
 import java.sql.Timestamp;
 
