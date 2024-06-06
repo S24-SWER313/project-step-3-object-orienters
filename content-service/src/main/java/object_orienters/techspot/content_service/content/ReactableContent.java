@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import object_orienters.techspot.content_service.comment.Comment;
 import object_orienters.techspot.content_service.dataTypes.DataType;
-
 import object_orienters.techspot.content_service.post.Post;
 import object_orienters.techspot.content_service.reaction.Reaction;
 
@@ -25,7 +24,9 @@ public abstract class ReactableContent extends Content {
     private String textData;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade =
+    CascadeType.ALL, orphanRemoval = true)
     private List<Reaction> reactions;
 
     @JsonIgnore
@@ -35,8 +36,8 @@ public abstract class ReactableContent extends Content {
     private int numOfReactions;
 
     public ReactableContent() {
-        this.reactions = new ArrayList<>();
-        this.comments = new ArrayList<>();
+    this.reactions = new ArrayList<>();
+    this.comments = new ArrayList<>();
 
     }
 
