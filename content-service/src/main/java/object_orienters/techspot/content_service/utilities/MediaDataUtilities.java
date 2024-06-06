@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import object_orienters.techspot.content_service.content.ReactableContent;
 import object_orienters.techspot.content_service.dataTypes.DataType;
 import object_orienters.techspot.content_service.dataTypes.DataTypeRepository;
 
@@ -51,11 +52,11 @@ public class MediaDataUtilities {
         });
     }
 
-    // public void handleDeleteMediaData(ReactableContent post) {
-    //     post.getMediaData().stream().forEach(media -> {
-    //         fileStorageService.deleteFile(media.getFileName());
-    //         dataTypeRepository.delete(media);
-    //     });
+    public void handleDeleteMediaData(ReactableContent post) {
+        post.getMediaData().stream().forEach(media -> {
+            fileStorageService.deleteFile(media.getFileName());
+            dataTypeRepository.delete(media);
+        });
 
-    // }
+    }
 }

@@ -28,8 +28,8 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import object_orienters.techspot.content_service.content.Post;
 import object_orienters.techspot.content_service.dataTypes.DataType;
+import object_orienters.techspot.content_service.post.Post;
 
 @Entity
 @Data
