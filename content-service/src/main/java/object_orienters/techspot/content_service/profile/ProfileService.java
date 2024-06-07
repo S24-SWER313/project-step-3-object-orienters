@@ -1,5 +1,7 @@
 package object_orienters.techspot.content_service.profile;
 
+ import object_orienters.techspot.content_service.ChatterBean;
+ import object_orienters.techspot.content_service.MessagesServiceProxy;
 import object_orienters.techspot.content_service.dataTypes.DataType;
 import object_orienters.techspot.content_service.dataTypes.DataTypeRepository;
 import object_orienters.techspot.content_service.exceptions.UserCannotFollowSelfException;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.netflix.discovery.converters.Auto;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -27,6 +31,9 @@ public class ProfileService {
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
+
+    @Autowired
+    private MessagesServiceProxy proxy;
 
     // @Autowired
     // ChatterService chatterService;
@@ -56,6 +63,7 @@ public class ProfileService {
         // ProfileNotFoundException(username)));
         newProfile.setEmail(email);
         newProfile.setName(name);
+        proxy.addChatter1(username, name, "ONLINE");
         // chatterService.saveChatter(new Chatter(newProfile.getUsername(),
         // newProfile.getName(), Status.ONLINE));
         return repo.save(newProfile);
