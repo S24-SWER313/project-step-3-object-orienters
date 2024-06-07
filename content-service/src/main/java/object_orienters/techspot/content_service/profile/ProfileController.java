@@ -48,7 +48,7 @@ public class ProfileController {
         return LocalDateTime.now().format(formatter) + " ";
     }
 
-    @PostMapping(value = "/",produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "",produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createProf(@RequestBody SignupRequest request) throws IOException {
         Profile prof = profileService.createNewProfile(request.getUsername(), request.getEmail(), request.getName());
 
