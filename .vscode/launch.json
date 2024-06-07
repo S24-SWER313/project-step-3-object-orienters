@@ -5,7 +5,8 @@
             "name": "ContentServiceApplication",
             "request": "launch",
             "mainClass": "object_orienters.techspot.content_service.ContentServiceApplication",
-            "projectName": "content-service"
+            "projectName": "content-service",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=53554 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=content-service"
         },
         {
             "type": "java",
@@ -25,6 +26,26 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "object_orienters.techspot.contentservice.ContentServiceApplication",
             "projectName": "content-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-NamingServerApplication<naming-server>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "object_orienters.techspot.naming_server.NamingServerApplication",
+            "projectName": "naming-server",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MessagesServiceApplication<messages-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "object_orienters.techspot.messages_service.MessagesServiceApplication",
+            "projectName": "messages-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

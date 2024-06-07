@@ -9,6 +9,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -21,11 +23,22 @@ public class ChatterController {
     @Autowired
     private ChatterService chatterService;
 
+    // @Autowired
+    // ContentServiceProxy proxy;
+
     @MessageMapping("/user.add")
     @SendTo("/user/public")
     public Chatter addChatter(@Payload Chatter chatter) {
         chatterService.saveChatter(chatter);
         return chatter;
+    }
+
+    @PostMapping("/chatter/add")
+    public ResponseEntity<?> addChatter1(@RequestParam String name, @RequestParam String username,
+            @RequestParam String status) {
+        Chatter chatter = new Chatter(username, name, Status.valueOf(status));
+        chatterService.saveChatter(chatter);
+        return ResponseEntity.ok(chatter);
     }
 
     @MessageMapping("/user.disconnect")
