@@ -2,6 +2,7 @@ package object_orienters.techspot.content_service.profile;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
+ import object_orienters.techspot.content_service.SignupRequest;
 import object_orienters.techspot.content_service.exceptions.ExceptionsResponse;
 import object_orienters.techspot.content_service.exceptions.UserCannotFollowSelfException;
 import object_orienters.techspot.content_service.exceptions.UserNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -45,6 +48,13 @@ public class ProfileController {
         return LocalDateTime.now().format(formatter) + " ";
     }
 
+    @PostMapping(value = "/newProf",produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createProf(@RequestBody SignupRequest request) throws IOException {
+        Profile prof = profileService.createNewProfile(request.getUsername(), request.getEmail(), request.getName());
+
+        return ResponseEntity.ok(prof);
+    }
+
     @GetMapping("/{username}")
     public ResponseEntity<?> one(@PathVariable String username) {
         try {
@@ -61,7 +71,7 @@ public class ProfileController {
     }
 
     @PutMapping("/{username}")
-//    @PreAuthorize("#username == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfile newUser, @PathVariable String username) {
         try {
             logger.info(">>>>Updating Profile... " + getTimestamp() + "<<<<");
@@ -80,7 +90,7 @@ public class ProfileController {
     // get user followers
     @GetMapping("/{username}/followers")
     public ResponseEntity<?> Followers(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) {
 
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
@@ -106,7 +116,7 @@ public class ProfileController {
     @GetMapping("/{username}/follower")
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
 
-                                                 @RequestParam(value = "followerUserName") String followerUserName) {
+            @RequestParam(value = "followerUserName") String followerUserName) {
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
@@ -122,7 +132,7 @@ public class ProfileController {
     // get user followers
     @GetMapping("/{username}/following")
     public ResponseEntity<?> Following(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         try {
             logger.info(">>>>Retrieving Following List... " + getTimestamp() + "<<<<");
             Page<Profile> followingPage = profileService.getUserFollowingByUsername(username, page, size);
@@ -145,7 +155,7 @@ public class ProfileController {
 
     @GetMapping("/{username}/following/{followingUsername}")
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
-                                                  @PathVariable String followingUsername) {
+            @PathVariable String followingUsername) {
         try {
             logger.info(">>>>Retrieving Following Profile... " + getTimestamp() + "<<<<");
             Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername)
@@ -160,7 +170,8 @@ public class ProfileController {
     }
 
     @PostMapping("/{username}/followers")
-//    @PreAuthorize("#followerUserName.get(\"username\").asText() == authentication.principal.username")
+    // @PreAuthorize("#followerUserName.get(\"username\").asText() ==
+    // authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
             logger.info(">>>>Adding New Follower... " + getTimestamp() + "<<<<");
@@ -174,13 +185,12 @@ public class ProfileController {
             logger.info(">>>>Error Occurred: " + ex.getMessage() + " " + getTimestamp() + "<<<<");
             return ExceptionsResponse.getErrorResponseEntity(ex, HttpStatus.NOT_FOUND);
 
-
         }
     }
 
     // delete follower from user
     @DeleteMapping("/{username}/followers")
-//    @PreAuthorize("isAuthenticated()")
+    // @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
         try {
             logger.info(">>>>Deleting Follower... " + getTimestamp() + "<<<<");
@@ -195,7 +205,7 @@ public class ProfileController {
     }
 
     @DeleteMapping("/{username}/following")
-//    @PreAuthorize("#username == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
         try {
             logger.info(">>>>Deleting Following... " + getTimestamp() + "<<<<");
@@ -210,10 +220,10 @@ public class ProfileController {
     }
 
     @PostMapping("/{username}/profilePic")
-//    @PreAuthorize("#username == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addProfilePic(@PathVariable String username,
-                                           @RequestParam(value = "file") MultipartFile file,
-                                           @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
         try {
             logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addProfilePic(username, file, text);
@@ -227,15 +237,14 @@ public class ProfileController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
 
-
         }
     }
 
     @PostMapping("/{username}/backgroundImg")
-//    @PreAuthorize("#username == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addBackgroundImg(@PathVariable String username,
-                                              @RequestParam(value = "file") MultipartFile file,
-                                              @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
         try {
             logger.info(">>>>Adding Background Image... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addBackgroundImg(username, file, text);
@@ -248,7 +257,6 @@ public class ProfileController {
         } catch (IOException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
-
 
         }
     }
