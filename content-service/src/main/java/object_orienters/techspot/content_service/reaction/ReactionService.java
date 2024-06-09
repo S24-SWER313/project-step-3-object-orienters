@@ -1,5 +1,6 @@
 package object_orienters.techspot.content_service.reaction;
 
+import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -74,23 +75,23 @@ public class ReactionService {
         ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         AtomicReference<Reaction> createdReaction = new AtomicReference<>();
-        // content.getReactions().stream()
-        //         .filter(reaction -> reaction.getReactor().getUsername().equals(reactor.getUsername()))
-        //         .findFirst().ifPresentOrElse(reaction -> {
-        //             reaction.setType(reactionTypeEnum);
-        //             reaction.setTimestamp(new Timestamp(System.currentTimeMillis()));
-        //             reaction.setReactionID(reactor.getUsername() + content.getContentID());
-        //             createdReaction.set(reaction);
+        content.getReactions().stream()
+                .filter(reaction -> reaction.getReactor().getUsername().equals(reactor.getUsername()))
+                .findFirst().ifPresentOrElse(reaction -> {
+                    reaction.setType(reactionTypeEnum);
+                    reaction.setTimestamp(new Timestamp(System.currentTimeMillis()));
+                    reaction.setReactionID(reactor.getUsername() + content.getContentID());
+                    createdReaction.set(reaction);
 
-        //         }, () -> {
-        //             Reaction newReaction = new Reaction(reactor, reactionTypeEnum, content);
-        //             newReaction.setTimestamp(new Timestamp(System.currentTimeMillis()));
-        //             newReaction.setReactionID(reactor.getUsername() + content.getContentID());
-        //             content.getReactions().add(newReaction);
-        //             content.setNumOfReactions(content.getNumOfReactions() + 1);
-        //             contentRepository.save(content);
-        //             createdReaction.set(newReaction);
-        //         });
+                }, () -> {
+                    Reaction newReaction = new Reaction(reactor, reactionTypeEnum, content);
+                    newReaction.setTimestamp(new Timestamp(System.currentTimeMillis()));
+                    newReaction.setReactionID(reactor.getUsername() + content.getContentID());
+                    content.getReactions().add(newReaction);
+                    content.setNumOfReactions(content.getNumOfReactions() + 1);
+                    contentRepository.save(content);
+                    createdReaction.set(newReaction);
+                });
 
         return reactionRepository.save(createdReaction.get());
 
