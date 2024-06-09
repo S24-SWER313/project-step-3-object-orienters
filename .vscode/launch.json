@@ -58,6 +58,17 @@
             "mainClass": "object_orienters.techspot.api_gateway.ApiGatewayApplication",
             "projectName": "api-gateway",
             "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=50833 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=api-gateway"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-SecurityServiceApplication<security-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "object_orienters.techspot.security_service.SecurityServiceApplication",
+            "projectName": "security-service",
+            "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
     ]

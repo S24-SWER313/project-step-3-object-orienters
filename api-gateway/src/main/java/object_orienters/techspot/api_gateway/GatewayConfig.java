@@ -41,6 +41,17 @@ public class GatewayConfig {
                                                 .filters(f -> f.rewritePath("/feed/(?<segment>.*)",
                                                                 "/feed/${segment}"))
                                                 .uri("http://localhost:8080"))
+                                .route(p -> p
+                                                .path("auth/**")
+                                                .filters(f -> f.rewritePath("/auth/(?<segment>.*)",
+                                                                "/auth/${segment}"))
+                                                .uri("http://localhost:8082"))
+                                .route(p -> p     //FIXME
+                                                .path("/**")
+                                                .filters(f -> f.rewritePath("/(?<segment>.*)",
+                                                                "/${segment}"))
+                                                .uri("http://localhost:8081"))
+
                                 .build();
 
         }

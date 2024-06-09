@@ -1,9 +1,11 @@
 package object_orienters.techspot.content_service.comment;
 
+import object_orienters.techspot.content_service.SecurityServiceProxy;
 import object_orienters.techspot.content_service.exceptions.*;
 import object_orienters.techspot.content_service.utilities.PermissionService;
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -27,53 +30,65 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class CommentController {
     private final CommentModelAssembler assembler;
     private final CommentService commentService;
-    //private final PostService postService;
+    // private final PostService postService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+    @Autowired
+    private SecurityServiceProxy securityServiceProxy;
 
     private final PermissionService permissionService;
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     CommentController(CommentModelAssembler commentModelAssembler,
-                      CommentService commentService,
-                      //PostService postService,
-                      PermissionService permissionService) {
+            CommentService commentService,
+            // PostService postService,
+            PermissionService permissionService) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
-       // this.postService = postService;
+        // this.postService = postService;
         this.permissionService = permissionService;
     }
 
     @GetMapping("/comments")
-    //@PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
+    // @PreAuthorize("@permissionService.canAccessPost(#contentID,
+    // authentication.principal.username)")
     public ResponseEntity<?> getComments(@PathVariable long contentID,
-                                         @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Retrieving Comments... @ " + getTimestamp() + "<<<<");
             Page<Comment> commentList = commentService.getComments(contentID, pageNumber, pageSize);
             CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(
                     commentList.stream().map(assembler::toModel).collect(Collectors.toList())
-                    // ,linkTo(methodOn(PostController.class).getPost(contentID,
-                    //         postService.getPost(contentID).getMainAuthor().getUsername()))
-                    //         .withRel("content")
-                    );
+            // ,linkTo(methodOn(PostController.class).getPost(contentID,
+            // postService.getPost(contentID).getMainAuthor().getUsername()))
+            // .withRel("content")
+            );
             logger.info(">>>>Comments Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
-        } catch (ContentNotFoundException  e) {//| PostNotFoundException
+        } catch (ContentNotFoundException e) {// | PostNotFoundException
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
-        } 
+        }
         // catch (ContentIsPrivateException e) {
-        //     logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-        //     return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.UNAUTHORIZED);
+        // logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp()
+        // + "<<<<");
+        // return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.UNAUTHORIZED);
 
         // }
     }
 
     @GetMapping("/comments/{commentID}")
-    //@PreAuthorize("@permissionService.canAccessComment(#contentID, authentication.principal.username)")
+    // @PreAuthorize("@permissionService.canAccessComment(#contentID,
+    // authentication.principal.username)")
     public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Retrieving Comment... @ " + getTimestamp() + "<<<<");
             Comment comment = commentService.getComment(commentID);
@@ -88,10 +103,13 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentID}")
-    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
+    // @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
-                                           @RequestParam(value = "files", required = false) List<MultipartFile> files,
-                                           @RequestParam(value = "text", required = false) String text) throws IOException {
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "text", required = false) String text) throws IOException {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Updating Comment... @ " + getTimestamp() + "<<<<");
             Comment updatedComment = commentService.updateComment(contentID, commentID, files, text);
@@ -106,12 +124,16 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    //@PreAuthorize("#commenter == authentication.principal.username && @permissionService.canAccessPost(#contentID, #commenter)")
+    // @PreAuthorize("#commenter == authentication.principal.username &&
+    // @permissionService.canAccessPost(#contentID, #commenter)")
     public ResponseEntity<?> addComment(
             @PathVariable long contentID,
             @RequestParam(value = "commenter") String commenter,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text) throws IOException {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
 
@@ -128,8 +150,11 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    //@PreAuthorize("isAuthenticated()")
+    // @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
             commentService.deleteComment(contentID, commentID);
@@ -146,4 +171,9 @@ public class CommentController {
         return LocalDateTime.now().format(formatter) + " ";
     }
 
+    private boolean verifyUser() {
+        Map<String, ?> body = securityServiceProxy.verifyUser().getBody();
+
+        return body.get("username") != "null";
+    }
 }
