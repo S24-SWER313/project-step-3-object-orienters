@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import object_orienters.techspot.content_service.SecurityServiceProxy;
 import object_orienters.techspot.content_service.exceptions.ContentNotFoundException;
 import object_orienters.techspot.content_service.exceptions.ExceptionsResponse;
 import object_orienters.techspot.content_service.exceptions.ReactionNotFoundException;
@@ -32,14 +34,17 @@ import object_orienters.techspot.content_service.utilities.PermissionService;
 @CrossOrigin(origins = "http://localhost:3000")
 public class ReactionController {
     private final ReactionService reactionService;
-   private final ReactionModelAssembler assembler;
+    private final ReactionModelAssembler assembler;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final Logger logger = LoggerFactory.getLogger(ReactionController.class);
 
     private final PermissionService permissionService;
 
+    @Autowired
+    private SecurityServiceProxy securityServiceProxy;
+
     public ReactionController(ReactionService reactionService,
-             ReactionModelAssembler assembler,
+            ReactionModelAssembler assembler,
             PermissionService permissionService) {
         this.reactionService = reactionService;
         this.assembler = assembler;
@@ -53,6 +58,8 @@ public class ReactionController {
             @PathVariable String reactionType,
             @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
 
@@ -73,6 +80,8 @@ public class ReactionController {
     public ResponseEntity<?> getReactions(@PathVariable Long contentID,
             @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
             Page<Reaction> reactionList = reactionService.getReactions(contentID, pageNumber, pageSize);
@@ -90,6 +99,9 @@ public class ReactionController {
     // authentication.principal.username)")
     public ResponseEntity<?> createReaction(@Valid @RequestBody Map<String, String> reaction,
             @PathVariable Long contentID) {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Adding Reaction... @ " + getTimestamp() + "<<<<");
             Reaction createdReaction = reactionService.createReaction(reaction.get("reactorID"),
@@ -107,10 +119,14 @@ public class ReactionController {
 
     @DeleteMapping("/reactions")
     public ResponseEntity<?> deleteReaction(@PathVariable Long contentID) {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Deleting Reaction... @ " + getTimestamp() + "<<<<");
             // reactionService
-            //         .deleteReaction(SecurityContextHolder.getContext().getAuthentication().getName() + contentID);
+            // .deleteReaction(SecurityContextHolder.getContext().getAuthentication().getName()
+            // + contentID);
             logger.info(">>>>Reaction Deleted. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.noContent().build();
         } catch (ReactionNotFoundException e) {
@@ -122,6 +138,8 @@ public class ReactionController {
 
     @GetMapping("/reactions/{username}")
     public ResponseEntity<?> isReactor(@PathVariable Long contentID, @PathVariable String username) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Checking if user is reactor... @ " + getTimestamp() + "<<<<");
             var isReactor = reactionService.isReactor(username, username + contentID);
@@ -136,5 +154,11 @@ public class ReactionController {
 
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";
+    }
+
+    private boolean verifyUser() {
+        Map<String, ?> body = securityServiceProxy.verifyUser().getBody();
+
+        return body.get("username") != "null";
     }
 }

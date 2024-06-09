@@ -1,14 +1,17 @@
 package object_orienters.techspot.content_service.profile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
- import object_orienters.techspot.content_service.SignupRequest;
+import object_orienters.techspot.content_service.SecurityServiceProxy;
+import object_orienters.techspot.content_service.SignupRequest;
 import object_orienters.techspot.content_service.exceptions.ExceptionsResponse;
 import object_orienters.techspot.content_service.exceptions.UserCannotFollowSelfException;
 import object_orienters.techspot.content_service.exceptions.UserNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -16,14 +19,15 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +38,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/profiles")
 @CrossOrigin(origins = "*")
 public class ProfileController {
+
+    @Autowired
+    private SecurityServiceProxy securityServiceProxy;
+    private String username;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final ProfileModelAssembler assembler;
     private final ProfileService profileService;
@@ -48,15 +56,43 @@ public class ProfileController {
         return LocalDateTime.now().format(formatter) + " ";
     }
 
-    @PostMapping(value = "",produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createProf(@RequestBody SignupRequest request) throws IOException {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         Profile prof = profileService.createNewProfile(request.getUsername(), request.getEmail(), request.getName());
 
         return ResponseEntity.ok(prof);
     }
 
+    @DeleteMapping("/{username}")
+    // @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> deleteProfile(@PathVariable String username) {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        else if (!username.equals(this.username))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
+        try {
+            logger.info(">>>>Deleting Profile... " + getTimestamp() + "<<<<");
+            profileService.deleteProfile(username);
+            logger.info(">>>>Profile Deleted. " + getTimestamp() + "<<<<");
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/{username}")
     public ResponseEntity<?> one(@PathVariable String username) {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(
                     ">>>>Retrieving Profile From Database... " + getTimestamp() + "<<<<");
@@ -73,6 +109,12 @@ public class ProfileController {
     @PutMapping("/{username}")
     // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfile newUser, @PathVariable String username) {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        else if (!username.equals(this.username))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Updating Profile... " + getTimestamp() + "<<<<");
             Profile updatedUser = profileService.updateUserProfile(newUser, username);
@@ -92,6 +134,8 @@ public class ProfileController {
     public ResponseEntity<?> Followers(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
             Page<Profile> followersPage = profileService.getUserFollowersByUsername(username, page, size);
@@ -117,6 +161,9 @@ public class ProfileController {
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
 
             @RequestParam(value = "followerUserName") String followerUserName) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
@@ -133,6 +180,9 @@ public class ProfileController {
     @GetMapping("/{username}/following")
     public ResponseEntity<?> Following(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Retrieving Following List... " + getTimestamp() + "<<<<");
             Page<Profile> followingPage = profileService.getUserFollowingByUsername(username, page, size);
@@ -156,6 +206,9 @@ public class ProfileController {
     @GetMapping("/{username}/following/{followingUsername}")
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
             @PathVariable String followingUsername) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Retrieving Following Profile... " + getTimestamp() + "<<<<");
             Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername)
@@ -173,6 +226,11 @@ public class ProfileController {
     // @PreAuthorize("#followerUserName.get(\"username\").asText() ==
     // authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        else if (!followerUserName.get("username").asText().equals(this.username))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Adding New Follower... " + getTimestamp() + "<<<<");
             Profile newFollower = profileService.addNewFollower(username, followerUserName.get("username").asText());
@@ -192,6 +250,11 @@ public class ProfileController {
     @DeleteMapping("/{username}/followers")
     // @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        else if (!username.equals(this.username))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Deleting Follower... " + getTimestamp() + "<<<<");
             profileService.deleteFollower(username, deletedUser.get("deletedUser").asText());
@@ -207,6 +270,11 @@ public class ProfileController {
     @DeleteMapping("/{username}/following")
     // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        else if (!username.equals(this.username))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Deleting Following... " + getTimestamp() + "<<<<");
             profileService.deleteFollowing(username, deletedUser.get("deletedUser").asText());
@@ -220,10 +288,17 @@ public class ProfileController {
     }
 
     @PostMapping("/{username}/profilePic")
-    // @PreAuthorize("#username == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username") //TODO make a
+    // custom annotation
     public ResponseEntity<?> addProfilePic(@PathVariable String username,
             @RequestParam(value = "file") MultipartFile file,
             @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        // else if (!username.equals(this.username))
+        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addProfilePic(username, file, text);
@@ -245,6 +320,12 @@ public class ProfileController {
     public ResponseEntity<?> addBackgroundImg(@PathVariable String username,
             @RequestParam(value = "file") MultipartFile file,
             @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        else if (!username.equals(this.username))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Adding Background Image... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addBackgroundImg(username, file, text);
@@ -259,6 +340,15 @@ public class ProfileController {
             return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
 
         }
+    }
+
+    private boolean verifyUser() {
+        Map<String, ?> body = securityServiceProxy.verifyUser().getBody();
+       // username = (String) body.get("username");
+      // System.out.println("hi im here%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+      System.out.println(body.get("username"));
+      System.out.println(body.get("username") != "null");
+        return body.get("username") != "null";
     }
 
 }

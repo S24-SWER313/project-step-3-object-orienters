@@ -5,6 +5,7 @@ public class SignupRequest {
     String username;
     String name;
     String email;
+    
     public String getUsername() {
         return username;
     }

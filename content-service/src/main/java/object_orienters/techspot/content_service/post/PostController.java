@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import object_orienters.techspot.content_service.SecurityServiceProxy;
 import object_orienters.techspot.content_service.content.Content;
 import object_orienters.techspot.content_service.content.Privacy;
 import object_orienters.techspot.content_service.exceptions.ContentIsPrivateException;
@@ -47,11 +49,13 @@ public class PostController {
     private final SharedPostModelAssembler sharedPostAssembler;
     private final PostService postService;
     private final ProfileService profileService;
+    @Autowired
+    private SecurityServiceProxy securityServiceProxy;
 
     PostController(PostModelAssembler assembler,
-                   PostService postService,
-                   SharedPostModelAssembler sharedPostAssembler,
-                   ProfileService profileService) {
+            PostService postService,
+            SharedPostModelAssembler sharedPostAssembler,
+            ProfileService profileService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
@@ -63,13 +67,19 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<?> getTimelinePosts(@PathVariable String username, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<?> getTimelinePosts(@PathVariable String username,
+            @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
+
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Retrieving Timeline Posts... @ " + getTimestamp() + "<<<<");
 
             Page<? extends Content> posts = postService.getPosts(username, offset, limit);
-            PagedModel<EntityModel<? extends Content>> pagedModel = PagedModel.of(posts.stream().map(assembler::toModel).collect(Collectors.toList()),
-                    new PagedModel.PageMetadata(posts.getSize(), posts.getNumber(), posts.getTotalElements(), posts.getTotalPages()));
+            PagedModel<EntityModel<? extends Content>> pagedModel = PagedModel.of(
+                    posts.stream().map(assembler::toModel).collect(Collectors.toList()),
+                    new PagedModel.PageMetadata(posts.getSize(), posts.getNumber(), posts.getTotalElements(),
+                            posts.getTotalPages()));
 
             logger.info(">>>>Timeline Posts Retrieved. @ " + getTimestamp() + "<<<<");
 
@@ -82,12 +92,13 @@ public class PostController {
     }
 
     @PostMapping("/posts")
-    //@PreAuthorize("#username == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
-                                              @RequestParam(value = "files", required = false) List<MultipartFile> files,
-                                              @RequestParam(value = "text", required = false) String text,
-                                              @RequestParam(value = "privacy") Privacy privacy)
-             {
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "privacy") Privacy privacy) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
             Post profilePost = postService.addTimelinePosts(username, files, text, privacy);
@@ -102,21 +113,25 @@ public class PostController {
     }
 
     @PutMapping("/posts/{postId}")
-    //@PreAuthorize("#username == authentication.principal.username && @permissionService.canAccessPost(#postId, #username)")
+    // @PreAuthorize("#username == authentication.principal.username &&
+    // @permissionService.canAccessPost(#postId, #username)")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-                                              @RequestParam(value = "files", required = false) List<MultipartFile> files,
-                                              @RequestParam(value = "text", required = false) String text,
-                                              @RequestParam(value = "privacy") Privacy privacy) throws IOException {
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "privacy") Privacy privacy) throws IOException {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
             Content editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
             logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toModel(editedPost));
-        } catch (UserNotFoundException | PostNotFoundException  exception) {
+        } catch (UserNotFoundException | PostNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
 
-        }catch (PostUnrelatedToUserException e) {
+        } catch (PostUnrelatedToUserException e) {
             return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.FORBIDDEN);
 
         }
@@ -124,8 +139,11 @@ public class PostController {
     }
 
     @DeleteMapping("/posts/{postId}")
-    //@PreAuthorize("#username == authentication.principal.username && @permissionService.canAccessPost(#postId, #username)")
+    // @PreAuthorize("#username == authentication.principal.username &&
+    // @permissionService.canAccessPost(#postId, #username)")
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
             postService.deletePost(username, postId);
@@ -143,8 +161,11 @@ public class PostController {
     }
 
     @GetMapping("/posts/{postId}")
-    //@PreAuthorize("@permissionService.canAccessPost(#postId, authentication.principal.username)")
+    // @PreAuthorize("@permissionService.canAccessPost(#postId,
+    // authentication.principal.username)")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             profileService.getUserByUsername(username);
             logger.info(">>>>Retrieving Post... @ " + getTimestamp() + "<<<<");
@@ -174,9 +195,12 @@ public class PostController {
     }
 
     @PostMapping("/posts/{postId}/share")
-    //@PreAuthorize("#bodyMap['sharer'] == authentication.principal.username && @permissionService.isPostPublic(#postId)")
+    // @PreAuthorize("#bodyMap['sharer'] == authentication.principal.username &&
+    // @permissionService.isPostPublic(#postId)")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
-                                             @RequestBody Map<String, String> bodyMap) {
+            @RequestBody Map<String, String> bodyMap) {
+        if (!verifyUser())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         try {
             logger.info(">>>>Sharing Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = postService.createSharedPost(bodyMap.get("sharer"), postId,
@@ -196,5 +220,11 @@ public class PostController {
 
         }
 
+    }
+
+    private boolean verifyUser() {
+        Map<String, ?> body = securityServiceProxy.verifyUser().getBody();
+
+        return body.get("username") != "null";
     }
 }

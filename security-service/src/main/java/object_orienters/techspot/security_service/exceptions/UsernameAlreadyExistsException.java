@@ -1,4 +1,4 @@
-package object_orienters.techspot.api_gateway.exceptions;
+package object_orienters.techspot.security_service.exceptions;
 
 public class UsernameAlreadyExistsException extends RuntimeException {
     public UsernameAlreadyExistsException(String username) {
