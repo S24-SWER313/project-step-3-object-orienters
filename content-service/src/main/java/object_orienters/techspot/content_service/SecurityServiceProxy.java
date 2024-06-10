@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient(name = "security-service", url = "localhost:8082")
 public interface SecurityServiceProxy {
 
-    @GetMapping("/auth/verify")
+    @GetMapping(value = "/auth/verify")
     public ResponseEntity<Map<String, ?>> verifyUser();
 
 }

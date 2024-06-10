@@ -242,7 +242,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/auth/verify")
+    @GetMapping(value = "/auth/verify")
     public ResponseEntity<Map<String, ?>> verifyUser() {
         logger.info(">>>>Verifying User... " + getTimestamp() + "<<<<");
         try {

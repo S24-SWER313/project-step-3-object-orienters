@@ -58,10 +58,6 @@ public class ProfileController {
 
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createProf(@RequestBody SignupRequest request) throws IOException {
-
-        if (!verifyUser())
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-
         Profile prof = profileService.createNewProfile(request.getUsername(), request.getEmail(), request.getName());
 
         return ResponseEntity.ok(prof);
@@ -297,7 +293,7 @@ public class ProfileController {
         if (!verifyUser())
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         // else if (!username.equals(this.username))
-        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
 
         try {
             logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
@@ -342,13 +338,27 @@ public class ProfileController {
         }
     }
 
-    private boolean verifyUser() {
-        Map<String, ?> body = securityServiceProxy.verifyUser().getBody();
-       // username = (String) body.get("username");
-      // System.out.println("hi im here%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-      System.out.println(body.get("username"));
-      System.out.println(body.get("username") != "null");
-        return body.get("username") != "null";
+    private boolean verifyUser() { return true;
+        // Map<String, ?> body = securityServiceProxy.verifyUser().getBody();
+
+       
+
+        // if (body.containsKey("username")) {
+        //     username = (String) body.get("username");
+        //     System.out.println("user verified " + username);
+        //     return true;
+        // }
+
+        // System.out.println("user not verified");
+        // return false;
+
+
+        
+        // // username = (String) body.get("username");
+        // // System.out.println("hi im here%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        // System.out.println(body.get("username"));
+        // System.out.println(body.get("username") != "null");
+        // return body.get("username");
     }
 
 }

@@ -69,7 +69,7 @@ public class GeneralAuthServices {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         ImpleUserDetails userDetails = (ImpleUserDetails) authentication.getPrincipal();
 
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        String jwt = jwtUtils.generateTokenFromUsername(loginRequest.getUsername());
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
@@ -154,12 +154,26 @@ public class GeneralAuthServices {
     }
 
     public Map<String, ?> verifyUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println(SecurityContextHolder.getContext().getAuthentication().getName());
+
+        // String username =
+        // SecurityContextHolder.getContext().getAuthentication().getName();
+        // System.out.println(SecurityContextHolder.getContext().getAuthentication().getName());
         System.out.println("********************************************");
-        if (userRepository.findById(username).isPresent()) {
-            return Map.of("username", username);
+
+        // jwtUtils.getUserNameFromJwtToken()
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // System.out.println(principal instanceof ImpleUserDetails userDetails);
+        if (principal instanceof ImpleUserDetails userDetails) {
+            String username = userDetails.getUsername();
+            System.out.println("usernAME   from token" + username);
+            if (userRepository.findById(username).isPresent()) {
+                System.out.println("exists");
+                return Map.of("username", username);
+            }
         }
-        return Map.of("username", "null");
+
+        System.out.println("does not exist");
+        return Map.of();
     }
 }
