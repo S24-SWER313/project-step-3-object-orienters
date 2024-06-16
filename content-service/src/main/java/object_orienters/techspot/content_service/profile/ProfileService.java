@@ -1,11 +1,14 @@
 package object_orienters.techspot.content_service.profile;
 
- import object_orienters.techspot.content_service.ChatterBean;
- import object_orienters.techspot.content_service.MessagesServiceProxy;
+import object_orienters.techspot.content_service.ChatterBean;
+import object_orienters.techspot.content_service.MessagesServiceProxy;
+import object_orienters.techspot.content_service.comment.CommentRepository;
 import object_orienters.techspot.content_service.dataTypes.DataType;
 import object_orienters.techspot.content_service.dataTypes.DataTypeRepository;
+import object_orienters.techspot.content_service.exceptions.ProfileNotFoundException;
 import object_orienters.techspot.content_service.exceptions.UserCannotFollowSelfException;
 import object_orienters.techspot.content_service.exceptions.UserNotFoundException;
+import object_orienters.techspot.content_service.post.PostRepository;
 import object_orienters.techspot.content_service.utilities.FileStorageService;
 import object_orienters.techspot.content_service.utilities.MediaDataUtilities;
 
@@ -28,6 +31,11 @@ import java.util.Optional;
 public class ProfileService {
     @Autowired
     private ProfileRepository repo;
+
+    @Autowired
+    private PostRepository postRepository;
+
+
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -58,16 +66,27 @@ public class ProfileService {
     public Profile createNewProfile(String username, String email, String name) throws IOException {
         Profile newProfile = new Profile();
         newProfile.setUsername(username);
-        // newProfile.setOwner(
-        // userRepository.findByUsername(username).orElseThrow(() -> new
-        // ProfileNotFoundException(username)));
+       
         newProfile.setEmail(email);
         newProfile.setName(name);
         proxy.addChatter1(username, name, "ONLINE");
-        // chatterService.saveChatter(new Chatter(newProfile.getUsername(),
-        // newProfile.getName(), Status.ONLINE));
+       
         return repo.save(newProfile);
 
+    }
+
+    public void deleteProfile(String username) throws UserNotFoundException {
+        Profile profile = repo.findByUsername(username)
+                .orElseThrow(() -> new ProfileNotFoundException(username));
+                
+        profile.getPublishedPosts().stream().forEach(post -> {
+            post.getMediaData().stream().forEach(media -> {
+                fileStorageService.deleteFile(media.getFileName());
+            });
+            postRepository.delete(post);
+        });
+
+        repo.delete(profile);
     }
 
     @Transactional
@@ -78,6 +97,7 @@ public class ProfileService {
             Optional.ofNullable(newUser.getAbout()).ifPresent(user::setAbout);
             Optional.ofNullable(newUser.getProfession()).ifPresent(user::setProfession);
             Optional.ofNullable(newUser.getGender()).ifPresent(user::setGender);
+         
             // Optional.ofNullable(newUser.getPassword()).ifPresent(password -> {
             // user.getOwner().setPassword(encoder.encode(password));
             // userRepository.save(user.getOwner());

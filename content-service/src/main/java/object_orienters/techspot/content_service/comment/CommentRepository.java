@@ -18,5 +18,4 @@ public interface CommentRepository extends PagingAndSortingRepository<Comment, L
     void delete(Comment comment);
 
     Page<Comment> findByCommentedOn(ReactableContent contentID, Pageable pageable);
-
 }

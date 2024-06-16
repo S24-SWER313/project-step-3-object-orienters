@@ -40,6 +40,9 @@ public class ChatterService {
             //return firestoreRepository.getChattersByStatus(Status.ONLINE);
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+            
         }
     }
 }

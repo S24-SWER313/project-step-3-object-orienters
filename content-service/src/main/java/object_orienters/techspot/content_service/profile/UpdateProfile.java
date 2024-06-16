@@ -12,4 +12,5 @@ public class UpdateProfile {
     private String profession;
     private Profile.Gender gender;
     private String password;
+
 }
