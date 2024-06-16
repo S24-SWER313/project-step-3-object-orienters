@@ -22,7 +22,7 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase() throws IOException {
         logger.info("Initializing Firebase");
-        FileInputStream serviceAccount =  new FileInputStream("src/main/resources/techspot-objectorienters-firebase-adminsdk-bqho2-f5981f1058.json");
+        FileInputStream serviceAccount =  new FileInputStream("C:/Users/SilverBullet007/Documents/University/Spring 2024/SWER313 SOA/project-step-3-object-orienters/messages-service/src/main/resources/techspot-objectorienters-firebase-adminsdk-bqho2-f5981f1058.json");
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build();

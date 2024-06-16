@@ -42,7 +42,7 @@ public class GatewayConfig {
                                                                 "/feed/${segment}"))
                                                 .uri("http://localhost:8080"))
                                 .route(p -> p
-                                                .path("auth/**")
+                                                .path("/auth/**")
                                                 .filters(f -> f.rewritePath("/auth/(?<segment>.*)",
                                                                 "/auth/${segment}"))
                                                 .uri("http://localhost:8082"))
