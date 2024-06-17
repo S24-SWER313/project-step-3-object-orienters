@@ -8,6 +8,12 @@ services:
       - "8761:8761"
     networks:
       - my-network
+    healthcheck:
+      test: ["CMD-SHELL", "sleep 2"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 
   security-service:
@@ -18,7 +24,7 @@ services:
     environment:
       MYSQL_HOST: security-db
       MYSQL_USER: root
-#      MYSQL_PASSWORD: root
+      #      MYSQL_PASSWORD: root
       MYSQL_DATABASE: security
       MYSQL_PORT: 3306
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka/"
@@ -26,8 +32,10 @@ services:
     networks:
       - my-network
     depends_on:
-      - naming-server
-      - security-db
+      naming-server:
+        condition: service_healthy
+      security-db:
+        condition: service_healthy
 
 
   messages-service:
@@ -40,19 +48,14 @@ services:
     networks:
       - my-network
     depends_on:
-      - naming-server
-    healthcheck:
-      test: [ "CMD-SHELL", "curl --fail http://naming-server:8761/actuator/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      naming-server:
+        condition: service_healthy
 
   security-db:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: security
-#      MYSQL_ROOT_PASSWORD: root
+      #      MYSQL_ROOT_PASSWORD: root
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
       - "3306:3306"
@@ -60,6 +63,14 @@ services:
       - my-network
     volumes:
       - mysql_data:/var/lib/mysql_security
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 0s
+
+
 
   phymyadmin:
     image: phpmyadmin
