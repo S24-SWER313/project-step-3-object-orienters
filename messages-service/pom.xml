@@ -57,11 +57,12 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
+<!--		<resources>-->
+<!--			<resource>-->
+<!--				<directory>src/main/resources</directory>-->
+<!--				<targetPath>target/resources</targetPath>-->
+<!--			</resource>-->
+<!--		</resources>-->
 		<plugins>
 
 			<plugin>
