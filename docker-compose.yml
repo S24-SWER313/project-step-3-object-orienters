@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   naming-server:
     build:
@@ -8,7 +9,7 @@ services:
     networks:
       - my-network
     healthcheck:
-      test: ["CMD-SHELL", "sleep 2"]
+      test: [ "CMD-SHELL", "sleep 2" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -29,6 +30,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka/"
 
     networks:
+      - db-network
       - my-network
     depends_on:
       naming-server:
@@ -48,20 +50,18 @@ services:
       MYSQL_USER: root
       #      - MYSQL_PASSWORD=root
       MYSQL_DATABASE: profiles
-      MYSQL_PORT: 3305
+      MYSQL_PORT: 3306
       EUREKA_HOST: naming-server
       EUREKA_PORT: 8761
 
     depends_on:
-      - naming-server
-      - content-db
-      - security-service
+      naming-server:
+        condition: service_healthy
+      content-db:
+          condition: service_healthy
     networks:
+      - db2-network
       - my-network
-
-
-
-
 
 
   api-gateway:
@@ -74,8 +74,8 @@ services:
     networks:
       - my-network
     depends_on:
-      - naming-server
-
+      naming-server:
+        condition: service_healthy
 
 
   messages-service:
@@ -98,13 +98,13 @@ services:
       #      MYSQL_ROOT_PASSWORD: root
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
-      - "3306:3306"
+      - "3305:3306"
     networks:
-      - my-network
+      - db-network
     volumes:
-      - mysql_data:/var/lib/mysql_security
+      - mysql_data:/var/lib/security_db
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
       interval: 20s
       timeout: 10s
       retries: 5
@@ -113,32 +113,52 @@ services:
 
 
   content-db:
-      image: mysql:8.0
-      environment:
-        MYSQL_DATABASE: profiles
-        #      MYSQL_ROOT_PASSWORD: root
-        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-      ports:
-        - "3306:3305"
-      networks:
-        - my-network
-      volumes:
-        - content_data:/var/lib/mysql_content
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: profiles
+      #      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - "3306:3306"
+    networks:
+      - db2-network
+    volumes:
+      - mysql_data:/var/lib/content_db
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 0s
 
   phymyadmin:
     image: phpmyadmin
     ports:
       - "80:80"
     environment:
+      PMA_HOST: security-db
+      MYSQL_ROOT_PASSWORD:
+    networks:
+      - db-network
+
+
+  phymyadmin2:
+    image: phpmyadmin
+    ports:
+      - "90:80"
+    environment:
       PMA_HOST: content-db
       MYSQL_ROOT_PASSWORD:
     networks:
-      - my-network
+      - db2-network
 
 volumes:
   mysql_data:
-  content_data:
 
 networks:
   my-network:
+    driver: bridge
+  db-network:
+    driver: bridge
+  db2-network:
     driver: bridge
