@@ -7,6 +7,12 @@ services:
       - "8761:8761"
     networks:
       - my-network
+    healthcheck:
+      test: ["CMD-SHELL", "sleep 2"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 
   security-service:
@@ -25,8 +31,10 @@ services:
     networks:
       - my-network
     depends_on:
-      - naming-server
-      - security-db
+      naming-server:
+        condition: service_healthy
+      security-db:
+        condition: service_healthy
 
 
   content-service:
@@ -80,13 +88,8 @@ services:
     networks:
       - my-network
     depends_on:
-      - naming-server
-    healthcheck:
-      test: [ "CMD-SHELL", "curl --fail http://naming-server:8761/actuator/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      naming-server:
+        condition: service_healthy
 
   security-db:
     image: mysql:8.0
@@ -100,6 +103,14 @@ services:
       - my-network
     volumes:
       - mysql_data:/var/lib/mysql_security
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 0s
+
+
 
   content-db:
       image: mysql:8.0
