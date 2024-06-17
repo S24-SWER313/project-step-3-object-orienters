@@ -6,6 +6,8 @@ services:
       context: ./naming-server
     ports:
       - "8761:8761"
+    networks:
+      - my-network
 
 
   security-service:
@@ -14,14 +16,15 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - MYSQL_HOST=security-db
-      - MYSQL_USER=root
-#      - MYSQL_PASSWORD=root
-      - MYSQL_DATABASE=security
-      - MYSQL_PORT=3306
-      - EUREKA_HOST=naming-server
-      - EUREKA_PORT=8761
+      MYSQL_HOST: security-db
+      MYSQL_USER: root
+#      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: security
+      MYSQL_PORT: 3306
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka/"
 
+    networks:
+      - my-network
     depends_on:
       - naming-server
       - security-db
@@ -32,19 +35,18 @@ services:
       context: ./messages-service
     ports:
       - "8081:8081"
-
-#  contentservice:
-#    build:
-#      context: ./content-service
-#    ports:
-#      - "8080:8080"
-#    environment:
-#      - MYSQL_DATABASE: profiles
-#      - MYSQL_DATABASE
-#      - SPRING_DATASOURCE_USERNAME=root
-#      - SPRING_DATASOURCE_PASSWORD=
-#    depends_on:
-#      - db
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka/"
+    networks:
+      - my-network
+    depends_on:
+      - naming-server
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://naming-server:8761/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   security-db:
     image: mysql:8.0
@@ -54,6 +56,8 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
       - "3306:3306"
+    networks:
+      - my-network
     volumes:
       - mysql_data:/var/lib/mysql_security
 
@@ -64,6 +68,12 @@ services:
     environment:
       PMA_HOST: security-db
       MYSQL_ROOT_PASSWORD:
+    networks:
+      - my-network
 
 volumes:
   mysql_data:
+
+networks:
+  my-network:
+    driver: bridge
