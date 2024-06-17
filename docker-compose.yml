@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   naming-server:
     build:
@@ -38,6 +37,47 @@ services:
         condition: service_healthy
 
 
+  content-service:
+    build:
+      context: ./content-service
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka/"
+      MYSQL_HOST: content-db
+      MYSQL_USER: root
+      #      - MYSQL_PASSWORD=root
+      MYSQL_DATABASE: profiles
+      MYSQL_PORT: 3305
+      EUREKA_HOST: naming-server
+      EUREKA_PORT: 8761
+
+    depends_on:
+      - naming-server
+      - content-db
+      - security-service
+    networks:
+      - my-network
+
+
+
+
+
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - "8765:8765"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka/"
+    networks:
+      - my-network
+    depends_on:
+      - naming-server
+
+
+
   messages-service:
     build:
       context: ./messages-service
@@ -72,18 +112,32 @@ services:
 
 
 
+  content-db:
+      image: mysql:8.0
+      environment:
+        MYSQL_DATABASE: profiles
+        #      MYSQL_ROOT_PASSWORD: root
+        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      ports:
+        - "3306:3305"
+      networks:
+        - my-network
+      volumes:
+        - content_data:/var/lib/mysql_content
+
   phymyadmin:
     image: phpmyadmin
     ports:
       - "80:80"
     environment:
-      PMA_HOST: security-db
+      PMA_HOST: content-db
       MYSQL_ROOT_PASSWORD:
     networks:
       - my-network
 
 volumes:
   mysql_data:
+  content_data:
 
 networks:
   my-network:
