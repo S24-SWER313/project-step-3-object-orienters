@@ -16,12 +16,22 @@ services:
     environment:
       - MYSQL_HOST=security-db
       - MYSQL_USER=root
-      - MYSQL_PASSWORD=root
+#      - MYSQL_PASSWORD=root
       - MYSQL_DATABASE=security
-    depends_on:
-      - security-db
-      - naming-server
+      - MYSQL_PORT=3306
+      - EUREKA_HOST=naming-server
+      - EUREKA_PORT=8761
 
+    depends_on:
+      - naming-server
+      - security-db
+
+
+  messages-service:
+    build:
+      context: ./messages-service
+    ports:
+      - "8081:8081"
 
 #  contentservice:
 #    build:
@@ -37,16 +47,23 @@ services:
 #      - db
 
   security-db:
-    image: mysql:latest
+    image: mysql:8.0
     environment:
       MYSQL_DATABASE: security
-      MYSQL_ROOT_PASSWORD: root
-#      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+#      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql_security
 
+  phymyadmin:
+    image: phpmyadmin
+    ports:
+      - "80:80"
+    environment:
+      PMA_HOST: security-db
+      MYSQL_ROOT_PASSWORD:
 
 volumes:
   mysql_data:
