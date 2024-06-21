@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   naming-server:
-    build:
-      context: ./naming-server
+    image: objectorienters/namingserver:latest
     ports:
       - "8761:8761"
     networks:
@@ -17,8 +16,7 @@ services:
 
 
   security-service:
-    build:
-      context: ./security-service
+    image: objectorienters/securityservice:latest
     ports:
       - "8082:8082"
     environment:
@@ -40,8 +38,7 @@ services:
 
 
   content-service:
-    build:
-      context: ./content-service
+    image: objectorienters/contentservice:latest
     ports:
       - "8080:8080"
     environment:
@@ -65,8 +62,7 @@ services:
 
 
   api-gateway:
-    build:
-      context: ./api-gateway
+    image: objectorienters/apigateway:latest
     ports:
       - "8765:8765"
     environment:
@@ -82,8 +78,7 @@ services:
 
 
   messages-service:
-    build:
-      context: ./messages-service
+    image: objectorienters/messagesservice:latest
     ports:
       - "8081:8081"
     environment:
