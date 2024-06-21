@@ -15,7 +15,8 @@ import jakarta.validation.Valid;
 import object_orienters.techspot.security_service.security.model.UpdateProfile;
 import object_orienters.techspot.security_service.security.payload.request.SignupRequest;
 
-@FeignClient(name = "content-service", url = "localhost:8080")
+//, url = "localhost:8080"
+@FeignClient(name = "content-service", url = "content-service:8080")
 public interface ContentServiceProxy {
 
     @PostMapping(value = "/profiles", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
