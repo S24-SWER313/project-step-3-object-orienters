@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Set;
 
-@FeignClient(name="content-service", url="localhost:8080")
+//", url="localhost:8080
+@FeignClient(name="content-service")
 public interface ContentServiceProxy {
 
     @GetMapping("/profiles/{username}/followers")
